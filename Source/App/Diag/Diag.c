@@ -16,7 +16,7 @@ static uint8 simple_Algo (int a)
     return (a + 1);
 }
 
-Std_ReturnType SecurityAccess_UnlockedL1_GetSeed (uint8* Seed)
+Std_ReturnType Diag_SecurityAccess_L1_GetSeed (uint8* Seed)
 {
     uint8 challengeSeed;  
     for (uint8 i = 0; i < 8; i++)
@@ -29,7 +29,7 @@ Std_ReturnType SecurityAccess_UnlockedL1_GetSeed (uint8* Seed)
     return E_OK;
 }
 
-Std_ReturnType SecurityAccess_UnlockedL1_CompareKey (uint8 Key[])
+Std_ReturnType Diag_SecurityAccess_L1_CompareKey (uint8 Key[])
 {
     for (uint8 i = 0; i < 8; i++)
     {
@@ -41,7 +41,7 @@ Std_ReturnType SecurityAccess_UnlockedL1_CompareKey (uint8 Key[])
     return E_OK;
 }
 
-Std_ReturnType SecurityAccess_UnlockedL1_CalculateKey (uint8 Seed[], uint8* Key)
+Std_ReturnType Diag_SecurityAccess_L1_CalculateKey (uint8 Seed[], uint8* Key)
 {
     for (uint8 i = 0; i < 8; i++)
     {
@@ -51,14 +51,14 @@ Std_ReturnType SecurityAccess_UnlockedL1_CalculateKey (uint8 Seed[], uint8* Key)
     return E_OK;
 }
 
-Std_ReturnType SecurityAccess_Handler (DiagMsgContextType* Msg)
+Std_ReturnType Diag_SecurityAccess_Handler (DiagMsgContextType* Msg)
 {
     uint8 seedLv1[8];
     uint8 keyLv1[8];
     uint8 subFuntion = Msg->reqData[1];
     if (subFuntion == 0x01)
     {
-        (void)SecurityAccess_UnlockedL1_GetSeed(seedLv1);
+        (void)Diag_SecurityAccess_L1_GetSeed(seedLv1);
         Msg->resData[0] = 0x67;
         Msg->resData[1] = 0x01;
         
@@ -75,8 +75,8 @@ Std_ReturnType SecurityAccess_Handler (DiagMsgContextType* Msg)
         {
             keyLv1[i] = Msg->reqData[i+2];
         }
-        (void)SecurityAccess_UnlockedL1_CalculateKey(Diag_SecurityAccess_L1_InternalSeed_buffer, Diag_SecurityAccess_L1_InternalKey_buffer);
-        if (SecurityAccess_UnlockedL1_CompareKey(keyLv1) == E_OK)
+        (void)Diag_SecurityAccess_L1_CalculateKey(Diag_SecurityAccess_L1_InternalSeed_buffer, Diag_SecurityAccess_L1_InternalKey_buffer);
+        if (Diag_SecurityAccess_L1_CompareKey(keyLv1) == E_OK)
         {
             Msg->resData[0] = 0x67;
             Msg->resData[1] = 0x02;
@@ -93,7 +93,7 @@ Std_ReturnType SecurityAccess_Handler (DiagMsgContextType* Msg)
     return E_OK;
 }
 
-void DiagMainFunction ()
+void Diag_MainFunction ()
 {
 
 }
