@@ -2,26 +2,49 @@
 
 ## 📌 Overview
 
-This project is a **personal implementation** of the UDS Diagnostic Service **0x29 – Authentication**, defined in **ISO 14229-2**. It simulates an embedded security flow where a client and an ECU engage in an authentication handshake using challenge-response mechanisms and cryptographic validation (e.g., HMAC-SHA256).
+This project simulates the security functionality of UDS as defined in ISO 14229-1:2020 in small-scale, with a focus on:
 
-The goal is to:
-- Understand and design the internal logic of Service 0x29
-- Simulate FSM behavior for secure communication
-- Apply embedded-friendly cryptographic techniques
-- Build a clean, scalable software architecture for diagnostic services
+- Diagnostic mechanism
+
+- Service 0x27 – SecurityAccess (Seed/Key)
+
+- Service 0x29 – Authentication (Introduced in ISO 14229-1:2020, defined in detail in ISO 14229-2)
+
+The goal is not to implement a full AUTOSAR-compliant ECU, but rather to design, manage, and deliver a learning-oriented software component that reflects the structure, flow, and behavior of real automotive software.
+
+Although the implementation does not rely on the AUTOSAR stack, it follows AUTOSAR-inspired design principles, such as:
+
+- Modular architecture
+
+- Layered separation
+
+- State machine
 
 ---
 
-## 📋 General Requirements
+## 🎯 Project Objectives
 
-- Support authentication process defined in ISO 14229-2:
-  - Authentication Request
-  - Challenge
-  - Authentication Message
-  - Result Evaluation
-- Maintain proper **state handling** and **NRC (Negative Response Code)** management
-- Implement basic **crypto backend** using software-based HMAC (no HSM required)
-- Ensure code readability and extensibility (clean architecture)
+- Develop a lightweight C-based simulation of UDS authentication services
+
+- Understand the diagnostic flow and security algorithms
+
+- Practice software design and clean architecture in an embedded-like context
+
+- Use GitHub to manage the codebase as a real deliverable
+
+- Implement basic functional verification
+
+## 🧠 Self-goal
+
+- Enhance C programming skills
+
+- Improve software architecture mindset
+
+- Deepen understanding Service 0x27
+
+- Know the basic concept of Service 0x29
+
+- Pratice testing skill
 
 > ⚠️ This is a software-level simulation, not deployed on real ECU. However, the design aims to be **portable** and **adaptable** to embedded systems (e.g., STM32) in the future.
 
