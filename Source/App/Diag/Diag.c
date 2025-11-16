@@ -7,21 +7,36 @@
 static uint8 Diag_SecurityAccess_L1_InternalSeed_buffer[8];
 static uint8 Diag_SecurityAccess_L1_InternalKey_buffer[8];
 
-static uint8 simple_Algo (int a)
+static uint8 simple_Algo (uint8 input);
+
+Std_ReturnType Diag_SecurityAccess_L1_GetSeed (Seed_Type* Seed);
+
+Std_ReturnType Diag_SecurityAccess_L1_CompareKey (Key_Type Key[]);
+
+Std_ReturnType Diag_SecurityAccess_L1_CalculateKey (Seed_Type Seed[], Key_Type* Key);
+
+Std_ReturnType Diag_SecurityAccess_Handler (DiagMsgContextType* Msg);
+
+static uint8 simple_Algo (uint8 input)
 {
-    if (a == 255)
+    uint8 output;
+    if (input == 255)
     {
+        output = 0x00;
         return 0;
     }
-    return (a + 1);
+
+    output = 0xFF;
+
+    return output;
 }
 
-Std_ReturnType Diag_SecurityAccess_L1_GetSeed (uint8* Seed)
+Std_ReturnType Diag_SecurityAccess_L1_GetSeed (Seed_Type* Seed)
 {
-    uint8 challengeSeed;  
+    Seed_Type challengeSeed;  
     for (uint8 i = 0; i < 8; i++)
     {
-        challengeSeed = (uint8)(rand() % 256); // random value in 0–255
+        challengeSeed = 0xFF;
         Seed[i] = challengeSeed;
         Diag_SecurityAccess_L1_InternalSeed_buffer[i] = Seed[i]; // write to global buffer
     }
@@ -29,7 +44,7 @@ Std_ReturnType Diag_SecurityAccess_L1_GetSeed (uint8* Seed)
     return E_OK;
 }
 
-Std_ReturnType Diag_SecurityAccess_L1_CompareKey (uint8 Key[])
+Std_ReturnType Diag_SecurityAccess_L1_CompareKey (Key_Type Key[])
 {
     for (uint8 i = 0; i < 8; i++)
     {
@@ -41,7 +56,7 @@ Std_ReturnType Diag_SecurityAccess_L1_CompareKey (uint8 Key[])
     return E_OK;
 }
 
-Std_ReturnType Diag_SecurityAccess_L1_CalculateKey (uint8 Seed[], uint8* Key)
+Std_ReturnType Diag_SecurityAccess_L1_CalculateKey (Seed_Type Seed[], Key_Type* Key)
 {
     for (uint8 i = 0; i < 8; i++)
     {

@@ -14,6 +14,10 @@ typedef uint8 MsgType;
 #define NRC_36 0x36
 #define NRC_37 0x37
 
+typedef uint8 Seed_Type;
+typedef uint8 Key_Type;
+
+
 typedef struct
 {
     MsgType reqData[128];      // Request buffer (input)
