@@ -58,12 +58,10 @@ Source/
 ├── App 
     ├── diag/
     │   ├── DiagRouter.c/.h          // Service dispatcher
-    │   ├── Service27/               // Optional: Seed/Key for Security Access
-    │   └── Service29/               // Main FSM logic for Authentication
+    │   ├── S27_SecurityAccess/               // Optional: Seed/Key for Security Access
+    │   └── S29_Authentication/               // Main FSM logic for Authentication
     ├── crypto/
     │   ├── HMAC.c/.h                // HMAC SHA256 engine
     │   └── SHA256.c/.h              // Internal hash functions
-    ├── test/
-    │   └── Test.c             // Simulate input frames & verify flow
-    ├── utils/
-    │   └── Logger.c/.h              // Lightweight debugging logger
+    |__ test/
+        |__ test.c
