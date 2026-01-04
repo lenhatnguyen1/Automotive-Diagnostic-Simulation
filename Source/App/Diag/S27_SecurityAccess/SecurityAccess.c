@@ -17,31 +17,100 @@ static uint8 Diag_SecurityAccess_L1_InternalKey_buffer[SECURITY_ACCESS_KEY_LENGT
 
 static uint8 Diag_SecurityAccess_Init_State = SECURITY_ACCESS_UNINITIALIZED;
 
-static Diag_SecLevelType Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_LOCKED;
+static Diag_SecLevelType Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
 
+/**
+ * @brief get the algorithm to compute key from seed from Crypto module
+ * 
+ * @param data 
+ * @param key 
+ * @return Std_ReturnType 
+ */
+static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_Type* key, uint8 len);
 
-static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* data, uint8 key);
-
+/**
+ * @brief get the seed from the Crypto module
+ * 
+ * @param Seed 
+ * @return Std_ReturnType 
+ */
 static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed);
 
+/**
+ * @brief compare the received key with the computed key
+ * 
+ * @param Key 
+ * @return Std_ReturnType 
+ */
 static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[]);
 
-static Std_ReturnType Diag_SecurityAccess_ComputeKey (Seed_Type Seed[], Key_Type* Key);
+/**
+ * @brief compute the key based on sent seed
+ * 
+ * @param Seed 
+ * @param Key 
+ * @return Std_ReturnType 
+ */
+static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key_Type* Key);
 
-static Std_ReturnType Diag_SecurityAccess_Lock(void);
+/**
+ * @brief reset the security access state
+ * 
+ * @return Std_ReturnType 
+ */
+static Std_ReturnType Diag_SecurityAccess_Reset(void);
+
+/* Build positive response frame */
+
+/**
+ * @brief build a positive response frame
+ * 
+ * @param Msg 
+ * @param subFunction 
+ * @param data 
+ * @param dataLen 
+ */
+static void Diag_SecurityAccess_BuildPositiveResponse(DiagMsgType* Msg, uint8 subFunction, const uint8* data, uint8 dataLen);
+
+/**
+ * @brief build a negative response frame
+ * 
+ * @param Msg 
+ * @param nrc 
+ */
+static void Diag_SecurityAccess_BuildNegativeResponse(DiagMsgType* Msg, uint8 nrc);
+
+/**
+ * @brief handle request seed
+ * 
+ * @param Msg 
+ */
+static void Diag_SecurityAccess_RequestSeedHandler(DiagMsgType* Msg);
+
+/**
+ * @brief handle send key
+ * 
+ * @param Msg 
+ */
+static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg);
 
 void Diag_SecurityAccess_Init (void)
 {
     Diag_SecurityAccess_Init_State = SECURITY_ACCESS_INITIALIZED;
-    Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_LOCKED;
+    Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
 }
 
-static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* data, uint8 len)
+static Std_ReturnType Diag_SecurityAccess_Reset(void)
+{
+    Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
+    return OK;
+}
+
+static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_Type* key, uint8 len)
 {
     for (int i = 0; i < len; i++)
     {
-        Diag_SecurityAccess_L1_InternalKey_buffer[i] = data[i] ^ 0xAA;
-        Diag_SecurityAccess_L1_InternalKey_buffer[i] = 0x01;
+        key[i] = seed[i] + 1;
     }
     return OK;
 }
@@ -72,68 +141,112 @@ static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[])
     return result;
 }
 
-static Std_ReturnType Diag_SecurityAccess_ComputeKey (Seed_Type Seed[], Key_Type* Key)
+static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key_Type* Key)
 {
-    uint8 calculatedKey[SECURITY_ACCESS_KEY_LENGTH];
+    (void)Diag_SecurityAccess_Algorithm(Seed, Key, SECURITY_ACCESS_KEY_LENGTH);
 
-    (void)Diag_SecurityAccess_Algorithm(Seed, SECURITY_ACCESS_KEY_LENGTH);
+    return OK;
+}
+
+Std_ReturnType Diag_SecurityAccess_Proccessor(DiagMsgType* Msg)
+{
+    uint8 subFunction = Msg->reqData[1];
+
+    switch (subFunction)
+    {
+        case SEC_LEVEL_1:           /* Request Seed */
+            Diag_SecurityAccess_RequestSeedHandler(Msg);
+            break;
+
+        case (SEC_LEVEL_1 + 1):     /* Send Key */
+            Diag_SecurityAccess_SendKeyHandler(Msg);
+            break;
+
+        default:                    /* Unsupported SubFunction */
+            Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_12);
+            break;
+    }
 
     return OK;
 }
 
 
-
-Std_ReturnType Diag_SecurityAccess_Proccessor (DiagMsgType* Msg)
+static void Diag_SecurityAccess_BuildPositiveResponse(DiagMsgType* Msg, uint8 subFunction,
+                                     const uint8* data, uint8 dataLen)
 {
-    uint8 seedLv1[SECURITY_ACCESS_SEED_LENGTH];
-    uint8 keyLv1[SECURITY_ACCESS_KEY_LENGTH];
-    uint8 subFuntion = Msg->reqData[1];
+    Msg->resData[0] = SERVICE_27_POSITIVE_RESPONSE; /* 0x67 */
+    Msg->resData[1] = subFunction;
 
-    if (subFuntion == 0x01)
+    if (data != NULL && dataLen > 0)
     {
-        (void)Diag_SecurityAccess_GetSeed(seedLv1);
-        Msg->resData[0] = 0x67;
-        Msg->resData[1] = 0x01;
-        
-        for (uint8 i = 0; i < SECURITY_ACCESS_SEED_LENGTH; i++)
+        for (uint8 i = 0; i < dataLen; i++)
         {
-            Msg->resData[i + 2] = seedLv1[i];
-        }
-
-        Msg->resDataLen = 10;
-
-        Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_WAITING_FOR_KEY;
-    }
-    else if (subFuntion == 0x02)
-    {
-        for (uint8 i = 0; i < SECURITY_ACCESS_KEY_LENGTH; i++)
-        {
-            keyLv1[i] = Msg->reqData[i+2];
-        }
-        (void)Diag_SecurityAccess_ComputeKey(Diag_SecurityAccess_L1_InternalSeed_buffer, Diag_SecurityAccess_L1_InternalKey_buffer);
-        if (Diag_SecurrityAccess_CurrentLevel == DIAG_SEC_WAITING_FOR_KEY)
-        if (Diag_SecurityAccess_CompareKey(keyLv1) == OK)
-        {
-            Msg->resData[0] = SERVICE_27_POSITIVE_RESPONSE;
-            Msg->resData[1] = 0x02;
-            Msg->resDataLen = 2;
-            Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_UNLOCKED;
-        }
-        else
-        if (Diag_SecurityAccess_CompareKey(keyLv1) != OK)
-        {
-            Msg->resData[0] = NEGATIVE_RESPONSE;
-            Msg->resData[1] = SERVICE_27;
-            Msg->resData[2] = NRC_35;  // NRC: InvalidKey
-            Msg->resDataLen = 3;
-            Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_LOCKED;
+            Msg->resData[i + 2] = data[i];
         }
     }
-    return OK;
+
+    Msg->resDataLen = 2 + dataLen;
 }
 
-static Std_ReturnType Diag_SecurityAccess_Lock(void)
+/* Build negative response frame */
+static void Diag_SecurityAccess_BuildNegativeResponse(DiagMsgType* Msg, uint8 nrc)
 {
-    Diag_SecurrityAccess_CurrentLevel = DIAG_SEC_LOCKED;
-    return OK;
+    Msg->resData[0] = NEGATIVE_RESPONSE; /* 0x7F */
+    Msg->resData[1] = SERVICE_27;
+    Msg->resData[2] = nrc;
+    Msg->resDataLen = 3;
 }
+
+/* Handle request Seed */
+static void Diag_SecurityAccess_RequestSeedHandler(DiagMsgType* Msg)
+{
+    uint8 seed[SECURITY_ACCESS_SEED_LENGTH];
+
+    if (Diag_SecurrityAccess_CurrentState != DIAG_SEC_LOCKED)
+    {
+        Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_24); /* RequestSequenceError */
+        return;
+    }
+
+    (void)Diag_SecurityAccess_GetSeed(seed);
+    Diag_SecurityAccess_BuildPositiveResponse(Msg, SEC_LEVEL_1, seed, SECURITY_ACCESS_SEED_LENGTH);
+
+    Diag_SecurrityAccess_CurrentState = DIAG_SEC_WAITING_FOR_KEY;
+}
+
+/* Handle send Key */
+static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg)
+{
+    uint8 receivedKey[SECURITY_ACCESS_KEY_LENGTH];
+    Std_ReturnType compareResult;
+
+    if (Diag_SecurrityAccess_CurrentState != DIAG_SEC_WAITING_FOR_KEY)
+    {
+        Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_24); /* RequestSequenceError */
+        return;
+    }
+
+    for (uint8 i = 0; i < SECURITY_ACCESS_KEY_LENGTH; i++)
+    {
+        receivedKey[i] = Msg->reqData[i + 2];
+    }
+
+    (void)Diag_SecurityAccess_ComputeKey(
+        Diag_SecurityAccess_L1_InternalSeed_buffer,
+        Diag_SecurityAccess_L1_InternalKey_buffer
+    );
+
+    compareResult = Diag_SecurityAccess_CompareKey(receivedKey);
+
+    if (compareResult == OK)
+    {
+        Diag_SecurityAccess_BuildPositiveResponse(Msg, SEC_LEVEL_1, NULL, 0);
+        Diag_SecurrityAccess_CurrentState = DIAG_SEC_UNLOCKED;
+    }
+    else
+    {
+        Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_35); /* InvalidKey */
+        Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
+    }
+}
+

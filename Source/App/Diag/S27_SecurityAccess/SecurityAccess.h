@@ -29,6 +29,8 @@ typedef enum
 #define SECURITY_ACCESS_SEED_LENGTH 16u
 #define SECURITY_ACCESS_KEY_LENGTH 16u
 
+#define SEC_LEVEL_1 0x01u
+
 
 void Diag_SecurityAccess_Init (void);
 Std_ReturnType Diag_SecurityAccess_Proccessor (DiagMsgType* Msg);
