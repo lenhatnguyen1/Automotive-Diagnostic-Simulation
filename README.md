@@ -1,6 +1,6 @@
 # UDS Service 0x29 - Authentication (Personal Research Project)
 
-## 📌 Overview
+## Overview
 
 This project simulates the security functionality of UDS as defined in ISO 14229-1:2020 in small-scale, with a focus on:
 
@@ -22,7 +22,7 @@ Although the implementation does not rely on the AUTOSAR stack, it follows AUTOS
 
 ---
 
-## 🎯 Project Objectives
+## Project Objectives
 
 - Develop a lightweight C-based simulation of UDS authentication services
 
@@ -34,7 +34,7 @@ Although the implementation does not rely on the AUTOSAR stack, it follows AUTOS
 
 - Implement basic functional verification
 
-## 🧠 Self-goal
+## Self-goal
 
 - Enhance C programming skills
 
@@ -44,13 +44,11 @@ Although the implementation does not rely on the AUTOSAR stack, it follows AUTOS
 
 - Know the basic concept of Service 0x29
 
-- Pratice testing skill
-
-> ⚠️ This is a software-level simulation, not deployed on real ECU. However, the design aims to be **portable** and **adaptable** to embedded systems (e.g., STM32) in the future.
+> This is a software-level simulation, not deployed on real ECU. However, the design aims to be **portable** and **adaptable** to embedded systems (e.g., STM32) in the future.
 
 ---
 
-## 📁 Project Structure (Planned)
+## Project Structure (Planned)
 
 ```plaintext
 Source/
