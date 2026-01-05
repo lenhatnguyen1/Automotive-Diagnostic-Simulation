@@ -14,15 +14,6 @@
 
 #include "DiagType.h"
 
-typedef enum
-{
-    DIAG_SEC_LOCKED = 0x00,
-    DIAG_SEC_WAITING_FOR_KEY = 0x01,
-    DIAG_SEC_UNLOCKED = 0x02,
-    DIAG_SEC_UNLOCKED_AND_WAITING_FOR_KEY = 0x03,
-    
-} Diag_SecurityStatusType;
-
 #define SECURITY_ACCESS_INITIALIZED 1u
 #define SECURITY_ACCESS_UNINITIALIZED 0u
 
@@ -32,5 +23,15 @@ typedef enum
 #define SEC_LEVEL_1 0x01u
 
 
+typedef enum
+{
+    DIAG_SEC_LOCKED = 0x00,
+    DIAG_SEC_WAITING_FOR_KEY = 0x01,
+    DIAG_SEC_UNLOCKED = 0x02,
+    DIAG_SEC_UNLOCKED_AND_WAITING_FOR_KEY = 0x03,
+    
+} Diag_SecurityStatusType;
+
 void Diag_SecurityAccess_Init (void);
-Std_ReturnType Diag_SecurityAccess_Proccessor (DiagMsgType* Msg);
+Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg);
+

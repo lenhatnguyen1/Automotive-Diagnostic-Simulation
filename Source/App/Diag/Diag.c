@@ -12,58 +12,63 @@
 #include "Diag.h"
 #include "SecurityAccess.h"
 
+Std_ReturnType Diag_Services_Router(DiagMsgType* Msg);
 
-void Diag_MainFunction ()
+uint8 Diag_SecurityAccess_Init_State = DIAG_UNINITIALIZED;
+
+/* ============================================================
+ *  Static service dispatch table
+ *  Index = Service ID (0x00 – 0xFF)
+ * ============================================================ */
+static Diag_ServiceType Diag_ServiceTable[256] =
 {
+    [SERVICE_27] = Diag_SecurityAccess_Entry,
 
+    /* future extension */
+    /* [SERVICE_11] = Diag_ECUReset_Processor, */
+    /* [SERVICE_22] = Diag_ReadDID_Processor, */
+};
+
+void Diag_Init (void)
+{
+    Diag_SecurityAccess_Init_State = DIAG_INITIALIZED;
+    Diag_SecurityAccess_Init();
+    printf("Call Diag_Init()\n");
+}
+
+void Diag_MainFunction (void)
+{
 
 }
 
-Std_ReturnType Diag_Services_Router (DiagMsgType* Msg)
+Std_ReturnType Diag_Services_Entry(DiagMsgType* Msg)
 {
-    Std_ReturnType ret = NOT_OK;
-
-    switch (Msg->reqData[0])
+    if (Diag_SecurityAccess_Init_State == DIAG_UNINITIALIZED)
     {
-        case SERVICE_27:
-            ret = Diag_SecurityAccess_Proccessor(Msg);
-            break;
-        
-        default:
-            // Handle unsupported service
-            ret = NOT_OK;
-            break;
+        return NOT_OK;
     }
 
-    return ret;
+    return Diag_Services_Router(Msg);
 }
 
-// int main()
-// {
-//     DiagMsgType msg;
-//     msg.reqData[0] = SERVICE_27;
-//     msg.reqData[1] = 0x01; // subfunction: request seed level 1
-//     msg.reqDataLen = 2;
-//     Diag_SecurityAccess_Proccessor(&msg);
-//     printf("Response for Seed Request:\n");
-//     for (uint8 i = 0; i < msg.resDataLen; i++)
-//     {
-//         printf("0x%02X ", msg.resData[i]);
-//     }
+Std_ReturnType Diag_Services_Router(DiagMsgType* Msg)
+{
+    printf("Call Diag_Services_Router()\n");
+    uint8 sid;
 
-//     msg.reqData[0] = SERVICE_27;
-//     msg.reqData[1] = 0x02; // subfunction: send key level 1
-//     // prepare key based on the seed received previously
-//     for (uint8 i = 0; i < 8; i++)
-//     {
-//         msg.reqData[i + 2] = 0x01; // Example key, should be computed based on the seed
-//     }
-//     msg.reqDataLen = 10;
-//     Diag_SecurityAccess_Proccessor(&msg);
-//     printf("\nResponse for Key Comparison:\n");
-//     for (uint8 i = 0; i < msg.resDataLen; i++)
-//     {
-//         printf("0x%02X ", msg.resData[i]);
-//     }
-//     return 0;
-// }
+    sid = Msg->reqData[0];
+
+    /* ---- Dispatch ---- */
+    if (Diag_ServiceTable[sid] != NULL)
+    {
+        return Diag_ServiceTable[sid](Msg);
+    }
+
+    /* ---- Unsupported Service ---- */
+    Msg->resData[0] = NEGATIVE_RESPONSE;
+    Msg->resData[1] = sid;
+    Msg->resData[2] = NRC_11; /* ServiceNotSupported */
+    Msg->resDataLen = 3;
+
+    return NOT_OK;
+}

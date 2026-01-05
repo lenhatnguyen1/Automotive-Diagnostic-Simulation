@@ -94,16 +94,34 @@ static void Diag_SecurityAccess_RequestSeedHandler(DiagMsgType* Msg);
  */
 static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg);
 
+/**
+ * @brief process security access service
+ * 
+ * @param Msg 
+ * @return Std_ReturnType 
+ */
+static Std_ReturnType Diag_SecurityAccess_Proccessor (DiagMsgType* Msg);
+
 void Diag_SecurityAccess_Init (void)
 {
     Diag_SecurityAccess_Init_State = SECURITY_ACCESS_INITIALIZED;
-    Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
+    (void)Diag_SecurityAccess_Reset();
 }
 
 static Std_ReturnType Diag_SecurityAccess_Reset(void)
 {
     Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
     return OK;
+}
+
+Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg)
+{
+    if (Diag_SecurityAccess_Init_State == SECURITY_ACCESS_UNINITIALIZED)
+    {
+        return NOT_OK;
+    }
+
+    return Diag_SecurityAccess_Proccessor(Msg);
 }
 
 static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_Type* key, uint8 len)
@@ -148,7 +166,7 @@ static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key
     return OK;
 }
 
-Std_ReturnType Diag_SecurityAccess_Proccessor(DiagMsgType* Msg)
+static Std_ReturnType Diag_SecurityAccess_Proccessor(DiagMsgType* Msg)
 {
     uint8 subFunction = Msg->reqData[1];
 
@@ -249,4 +267,5 @@ static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg)
         Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
     }
 }
+
 
