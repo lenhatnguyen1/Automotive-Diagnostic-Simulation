@@ -8,7 +8,7 @@ This project simulates the security functionality of UDS as defined in ISO 14229
 
 - Service 0x27 – SecurityAccess (Seed/Key)
 
-- Service 0x29 – Authentication (Introduced in ISO 14229-1:2020, defined in detail in ISO 14229-2)
+- Service 0x29 – Authentication (Introduced in ISO 14229-1:2020,)
 
 The goal is not to implement a full AUTOSAR-compliant ECU, but rather to design, manage, and deliver a learning-oriented software component that reflects the structure, flow, and behavior of real automotive software.
 
@@ -57,11 +57,10 @@ Source/
 ├── main.c                        // Entry point
 ├── App 
     ├── diag/
-    │   ├── DiagRouter.c/.h          // Service dispatcher
+    │   ├── Diag.c/.h          // Service dispatcher
     │   ├── S27_SecurityAccess/               // Optional: Seed/Key for Security Access
     │   └── S29_Authentication/               // Main FSM logic for Authentication
     ├── crypto/
-    │   ├── HMAC.c/.h                // HMAC SHA256 engine
-    │   └── SHA256.c/.h              // Internal hash functions
+    │   ├── Crypto.c/.h                // HMAC SHA256 engine
     |__ test/
         |__ test.c
