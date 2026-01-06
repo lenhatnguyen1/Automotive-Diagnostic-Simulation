@@ -12,16 +12,22 @@
 
 #pragma once
 
-#include "DiagType.h"
+#include "DiagTypes.h"
 
 #define SECURITY_ACCESS_INITIALIZED 1u
-#define SECURITY_ACCESS_UNINITIALIZED 0u
+#define SECURITY_ACCESS_E_UNINITIALIZED 0u
 
 #define SECURITY_ACCESS_SEED_LENGTH 16u
 #define SECURITY_ACCESS_KEY_LENGTH 16u
 
 #define SEC_LEVEL_1 0x01u
 
+typedef enum
+{
+    SECURITY_LOCKED = 0,
+    SECURITY_UNLOCKED = 1,
+    SECURITY_PENDING = 2,   
+} Diag_SecurityStatusReturnType;
 
 typedef enum
 {
@@ -34,4 +40,4 @@ typedef enum
 
 void Diag_SecurityAccess_Init (void);
 Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg);
-
+Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(Diag_SecurityStatusReturnType* status);

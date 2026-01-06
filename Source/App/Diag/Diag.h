@@ -11,13 +11,13 @@
 
 #pragma once
 
-#include "DiagType.h"
+#include "DiagTypes.h"
 #include "S27_SecurityAccess/SecurityAccess.h"
 
 #include "SecurityAccess.h"
 
 #define DIAG_INITIALIZED 1u
-#define DIAG_UNINITIALIZED 0u
+#define DIAG_E_UNINITIALIZED 0u
 
 typedef Std_ReturnType (*Diag_ServiceType)(DiagMsgType* Msg);
 

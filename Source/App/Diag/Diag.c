@@ -14,7 +14,7 @@
 
 Std_ReturnType Diag_Services_Router(DiagMsgType* Msg);
 
-uint8 Diag_SecurityAccess_Init_State = DIAG_UNINITIALIZED;
+uint8 Diag_SecurityAccess_Init_State = DIAG_E_UNINITIALIZED;
 
 /* ============================================================
  *  Static service dispatch table
@@ -43,9 +43,9 @@ void Diag_MainFunction (void)
 
 Std_ReturnType Diag_Services_Entry(DiagMsgType* Msg)
 {
-    if (Diag_SecurityAccess_Init_State == DIAG_UNINITIALIZED)
+    if (Diag_SecurityAccess_Init_State == DIAG_E_UNINITIALIZED)
     {
-        return NOT_OK;
+        return E_NOT_OK;
     }
 
     return Diag_Services_Router(Msg);
@@ -70,5 +70,5 @@ Std_ReturnType Diag_Services_Router(DiagMsgType* Msg)
     Msg->resData[2] = NRC_11; /* ServiceNotSupported */
     Msg->resDataLen = 3;
 
-    return NOT_OK;
+    return E_NOT_OK;
 }

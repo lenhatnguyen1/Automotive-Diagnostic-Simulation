@@ -15,9 +15,9 @@
 static uint8 Diag_SecurityAccess_L1_InternalSeed_buffer[SECURITY_ACCESS_SEED_LENGTH];
 static uint8 Diag_SecurityAccess_L1_InternalKey_buffer[SECURITY_ACCESS_KEY_LENGTH];
 
-static uint8 Diag_SecurityAccess_Init_State = SECURITY_ACCESS_UNINITIALIZED;
+static uint8 Diag_SecurityAccess_Init_State = SECURITY_ACCESS_E_UNINITIALIZED;
 
-static Diag_SecLevelType Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
+static Diag_SecurityStatusType Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKED;
 
 /**
  * @brief get the algorithm to compute key from seed from Crypto module
@@ -110,15 +110,15 @@ void Diag_SecurityAccess_Init (void)
 
 static Std_ReturnType Diag_SecurityAccess_Reset(void)
 {
-    Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
-    return OK;
+    Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKED;
+    return E_OK;
 }
 
 Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg)
 {
-    if (Diag_SecurityAccess_Init_State == SECURITY_ACCESS_UNINITIALIZED)
+    if (Diag_SecurityAccess_Init_State == SECURITY_ACCESS_E_UNINITIALIZED)
     {
-        return NOT_OK;
+        return E_NOT_OK;
     }
 
     return Diag_SecurityAccess_Proccessor(Msg);
@@ -130,7 +130,7 @@ static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_
     {
         key[i] = seed[i] + 1;
     }
-    return OK;
+    return E_OK;
 }
 
 static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed)
@@ -143,17 +143,17 @@ static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed)
         Diag_SecurityAccess_L1_InternalSeed_buffer[i] = Seed[i]; // write to global buffer
     }
 
-    return OK;
+    return E_OK;
 }
 
 static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[])
 {
-    Std_ReturnType result = OK;
+    Std_ReturnType result = E_OK;
     for (uint8 i = 0; i < SECURITY_ACCESS_KEY_LENGTH; i++)
     {
         if(Key[i] != Diag_SecurityAccess_L1_InternalKey_buffer[i])
         {
-            result = NOT_OK;
+            result = E_NOT_OK;
         }
     } 
     return result;
@@ -163,7 +163,7 @@ static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key
 {
     (void)Diag_SecurityAccess_Algorithm(Seed, Key, SECURITY_ACCESS_KEY_LENGTH);
 
-    return OK;
+    return E_OK;
 }
 
 static Std_ReturnType Diag_SecurityAccess_Proccessor(DiagMsgType* Msg)
@@ -185,7 +185,7 @@ static Std_ReturnType Diag_SecurityAccess_Proccessor(DiagMsgType* Msg)
             break;
     }
 
-    return OK;
+    return E_OK;
 }
 
 
@@ -220,7 +220,7 @@ static void Diag_SecurityAccess_RequestSeedHandler(DiagMsgType* Msg)
 {
     uint8 seed[SECURITY_ACCESS_SEED_LENGTH];
 
-    if (Diag_SecurrityAccess_CurrentState != DIAG_SEC_LOCKED)
+    if (Diag_SecurityAccess_CurrentState != DIAG_SEC_LOCKED)
     {
         Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_24); /* RequestSequenceError */
         return;
@@ -229,7 +229,7 @@ static void Diag_SecurityAccess_RequestSeedHandler(DiagMsgType* Msg)
     (void)Diag_SecurityAccess_GetSeed(seed);
     Diag_SecurityAccess_BuildPositiveResponse(Msg, SEC_LEVEL_1, seed, SECURITY_ACCESS_SEED_LENGTH);
 
-    Diag_SecurrityAccess_CurrentState = DIAG_SEC_WAITING_FOR_KEY;
+    Diag_SecurityAccess_CurrentState = DIAG_SEC_WAITING_FOR_KEY;
 }
 
 /* Handle send Key */
@@ -238,7 +238,7 @@ static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg)
     uint8 receivedKey[SECURITY_ACCESS_KEY_LENGTH];
     Std_ReturnType compareResult;
 
-    if (Diag_SecurrityAccess_CurrentState != DIAG_SEC_WAITING_FOR_KEY)
+    if (Diag_SecurityAccess_CurrentState != DIAG_SEC_WAITING_FOR_KEY)
     {
         Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_24); /* RequestSequenceError */
         return;
@@ -256,16 +256,28 @@ static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg)
 
     compareResult = Diag_SecurityAccess_CompareKey(receivedKey);
 
-    if (compareResult == OK)
+    if (compareResult == E_OK)
     {
-        Diag_SecurityAccess_BuildPositiveResponse(Msg, SEC_LEVEL_1, NULL, 0);
-        Diag_SecurrityAccess_CurrentState = DIAG_SEC_UNLOCKED;
+        Diag_SecurityAccess_BuildPositiveResponse(Msg, (SEC_LEVEL_1 + 1), NULL, 0);
+        Diag_SecurityAccess_CurrentState = DIAG_SEC_UNLOCKED;
     }
     else
     {
         Diag_SecurityAccess_BuildNegativeResponse(Msg, NRC_35); /* InvalidKey */
-        Diag_SecurrityAccess_CurrentState = DIAG_SEC_LOCKED;
+        Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKED;
     }
 }
 
+Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(Diag_SecurityStatusReturnType* status)
+{
+    if (status == NULL)
+    {
+        return E_NOT_OK;
+    }
 
+    if (DIAG_SEC_UNLOCKED == Diag_SecurityAccess_CurrentState)
+        *status = SECURITY_UNLOCKED;
+    else
+        *status = SECURITY_LOCKED;
+    return E_OK;
+}
