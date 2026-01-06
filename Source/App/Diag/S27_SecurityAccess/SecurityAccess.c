@@ -136,7 +136,7 @@ static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_
 static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed)
 {
     Seed_Type challengeSeed;  
-    for (uint8 i = 0; i < 8; i++)
+    for (uint8 i = 0; i < SECURITY_ACCESS_SEED_LENGTH; i++)
     {
         challengeSeed = 0xFF;
         Seed[i] = challengeSeed;

@@ -33,7 +33,7 @@ void Diag_Init (void)
 {
     Diag_SecurityAccess_Init_State = DIAG_INITIALIZED;
     Diag_SecurityAccess_Init();
-    printf("Call Diag_Init()\n");
+    // printf("Call Diag_Init()\n");
 }
 
 void Diag_MainFunction (void)
@@ -53,7 +53,7 @@ Std_ReturnType Diag_Services_Entry(DiagMsgType* Msg)
 
 Std_ReturnType Diag_Services_Router(DiagMsgType* Msg)
 {
-    printf("Call Diag_Services_Router()\n");
+    // printf("Call Diag_Services_Router()\n");
     uint8 sid;
 
     sid = Msg->reqData[0];
