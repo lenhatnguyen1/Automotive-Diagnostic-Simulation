@@ -110,7 +110,7 @@ Std_ReturnType Test_UnlockECU(void)
     DiagMsgType msg;
     uint8 dummyKey[16] = {0}; /* test key */
 
-    if (Test_RequestSeed(&msg) != E_OK)
+    if (Test_RequestSeed(&msg) != E_OK) 
     {
         printf("Unlock ECU: RequestSeed FAILED\n");
         return E_NOT_OK;
