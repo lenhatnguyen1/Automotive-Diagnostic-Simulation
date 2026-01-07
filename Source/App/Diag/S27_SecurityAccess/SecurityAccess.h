@@ -38,6 +38,24 @@ typedef enum
     
 } Diag_SecurityStatusType;
 
+/**
+ * @brief Init Security Access module
+ * 
+ */
 void Diag_SecurityAccess_Init (void);
+
+/**
+ * @brief Entry of Security Access processs
+ * 
+ * @param Msg 
+ * @return Std_ReturnType 
+ */
 Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg);
+
+/**
+ * @brief Get the security status for verifying protected object
+ * 
+ * @param status 
+ * @return Std_ReturnType 
+ */
 Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(Diag_SecurityStatusReturnType* status);
