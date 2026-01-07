@@ -17,8 +17,12 @@
 int main(void)
 {
     Diag_Init();
+    DiagMsgType msg;
+    uint8 dummyKey[16] = {0}; /* test key */
 
     (void)Test_UnlockECU();
+
+    (void)Test_SendKey(&dummyKey, 16, &msg);
 
     return 0;
 }
