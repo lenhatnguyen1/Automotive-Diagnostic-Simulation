@@ -10,7 +10,8 @@
  */
 
 #include "Diag.h"
-#include "SecurityAccess.h"
+#include "S27_SecurityAccess.h"
+#include "S29_Authentication.h"
 
 Std_ReturnType Diag_Services_Router(DiagMsgType* Msg);
 
@@ -23,10 +24,7 @@ uint8 Diag_SecurityAccess_Init_State = DIAG_E_UNINITIALIZED;
 static Diag_ServiceType Diag_ServiceTable[256] =
 {
     [SERVICE_27] = Diag_SecurityAccess_Entry,
-
-    /* future extension */
-    /* [SERVICE_11] = Diag_ECUReset_Processor, */
-    /* [SERVICE_22] = Diag_ReadDID_Processor, */
+    [SERVICE_29] = Diag_Authentication_Entry,
 };
 
 void Diag_Init (void)

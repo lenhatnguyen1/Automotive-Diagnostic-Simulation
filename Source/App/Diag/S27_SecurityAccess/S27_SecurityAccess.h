@@ -22,12 +22,17 @@
 
 #define SEC_LEVEL_1 0x01u
 
+typedef uint8 SA_SeedType;
+typedef uint8 SA_KeyType;
+typedef uint8 SA_SecLevelType;
+typedef uint8 SA_CurrentSecurityLevel;
+
 typedef enum
 {
     SECURITY_LOCKED = 0,
     SECURITY_UNLOCKED = 1,
     SECURITY_PENDING = 2,   
-} Diag_SecurityStatusReturnType;
+} SA_SecurityStatusReturnType;
 
 typedef enum
 {
@@ -36,7 +41,10 @@ typedef enum
     DIAG_SEC_UNLOCKED = 0x02,
     DIAG_SEC_UNLOCKED_AND_WAITING_FOR_KEY = 0x03,
     
-} Diag_SecurityStatusType;
+} SA_SecurityStatusType;
+
+
+/* Public API */
 
 /**
  * @brief Init Security Access module
@@ -58,4 +66,4 @@ Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg);
  * @param status 
  * @return Std_ReturnType 
  */
-Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(Diag_SecurityStatusReturnType* status);
+Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(SA_SecurityStatusReturnType* status);

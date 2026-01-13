@@ -10,14 +10,14 @@
  */
 
 
-#include "SecurityAccess.h"
+#include "S27_SecurityAccess.h"
 
 static uint8 Diag_SecurityAccess_L1_InternalSeed_buffer[SECURITY_ACCESS_SEED_LENGTH];
 static uint8 Diag_SecurityAccess_L1_InternalKey_buffer[SECURITY_ACCESS_KEY_LENGTH];
 
 static uint8 Diag_SecurityAccess_Init_State = SECURITY_ACCESS_E_UNINITIALIZED;
 
-static Diag_SecurityStatusType Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKED;
+static SA_SecurityStatusType Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKED;
 
 /**
  * @brief get the algorithm to compute key from seed from Crypto module
@@ -26,7 +26,7 @@ static Diag_SecurityStatusType Diag_SecurityAccess_CurrentState = DIAG_SEC_LOCKE
  * @param key 
  * @return Std_ReturnType 
  */
-static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_Type* key, uint8 len);
+static Std_ReturnType Diag_SecurityAccess_Algorithm (const SA_SeedType* seed, SA_KeyType* key, uint8 len);
 
 /**
  * @brief get the seed from the Crypto module
@@ -34,7 +34,7 @@ static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_
  * @param Seed 
  * @return Std_ReturnType 
  */
-static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed);
+static Std_ReturnType Diag_SecurityAccess_GetSeed (SA_SeedType* Seed);
 
 /**
  * @brief compare the received key with the computed key
@@ -42,7 +42,7 @@ static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed);
  * @param Key 
  * @return Std_ReturnType 
  */
-static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[]);
+static Std_ReturnType Diag_SecurityAccess_CompareKey (SA_KeyType Key[]);
 
 /**
  * @brief compute the key based on sent seed
@@ -51,7 +51,7 @@ static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[]);
  * @param Key 
  * @return Std_ReturnType 
  */
-static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key_Type* Key);
+static Std_ReturnType Diag_SecurityAccess_ComputeKey (const SA_SeedType* Seed, SA_KeyType* Key);
 
 /**
  * @brief reset the security access state
@@ -124,8 +124,9 @@ Std_ReturnType Diag_SecurityAccess_Entry(DiagMsgType* Msg)
     return Diag_SecurityAccess_Proccessor(Msg);
 }
 
-static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_Type* key, uint8 len)
+static Std_ReturnType Diag_SecurityAccess_Algorithm (const SA_SeedType* seed, SA_KeyType* key, uint8 len)
 {
+    // dummy algorithm: key = seed + 1
     for (int i = 0; i < len; i++)
     {
         key[i] = seed[i] + 1;
@@ -133,9 +134,9 @@ static Std_ReturnType Diag_SecurityAccess_Algorithm (const Seed_Type* seed, Key_
     return E_OK;
 }
 
-static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed)
+static Std_ReturnType Diag_SecurityAccess_GetSeed (SA_SeedType* Seed)
 {
-    Seed_Type challengeSeed;  
+    SA_SeedType challengeSeed;  
     for (uint8 i = 0; i < SECURITY_ACCESS_SEED_LENGTH; i++)
     {
         challengeSeed = 0xFF;
@@ -146,7 +147,7 @@ static Std_ReturnType Diag_SecurityAccess_GetSeed (Seed_Type* Seed)
     return E_OK;
 }
 
-static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[])
+static Std_ReturnType Diag_SecurityAccess_CompareKey (SA_KeyType Key[])
 {
     Std_ReturnType result = E_OK;
     for (uint8 i = 0; i < SECURITY_ACCESS_KEY_LENGTH; i++)
@@ -159,7 +160,7 @@ static Std_ReturnType Diag_SecurityAccess_CompareKey (Key_Type Key[])
     return result;
 }
 
-static Std_ReturnType Diag_SecurityAccess_ComputeKey (const Seed_Type* Seed, Key_Type* Key)
+static Std_ReturnType Diag_SecurityAccess_ComputeKey (const SA_SeedType* Seed, SA_KeyType* Key)
 {
     (void)Diag_SecurityAccess_Algorithm(Seed, Key, SECURITY_ACCESS_KEY_LENGTH);
 
@@ -268,7 +269,7 @@ static void Diag_SecurityAccess_SendKeyHandler(DiagMsgType* Msg)
     }
 }
 
-Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(Diag_SecurityStatusReturnType* status)
+Std_ReturnType Diag_SecurityAccess_GetSecurityStatus(SA_SecurityStatusReturnType* status)
 {
     if (status == NULL)
     {

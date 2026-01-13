@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "test.h"
-#include "SecurityAccess.h"
+#include "S27_SecurityAccess.h"
 
 /* ================= Utilities ================= */
 
@@ -17,7 +17,7 @@ void Test_PrintFrame(const char* prefix, const uint8* data, uint32 len)
 
 void Test_PrintSecurityStatus(void)
 {
-    Diag_SecurityStatusReturnType status;
+    SA_SecurityStatusReturnType status;
 
     if (Diag_SecurityAccess_GetSecurityStatus(&status) != E_OK)
     {
